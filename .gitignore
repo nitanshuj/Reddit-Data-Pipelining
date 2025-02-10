@@ -130,6 +130,10 @@ ENV/
 env.bak/
 venv.bak/
 
+airflow.env
+./airflow.env
+/airflow.env
+
 # Spyder project settings
 .spyderproject
 .spyproject
