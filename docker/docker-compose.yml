@@ -1,0 +1,38 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - "2181:2181"
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181      # Zookeeper connection string
+      - KAFKA_CFG_LOG_RETENTION_HOURS=168               # 7 days
+      - KAFKA_CREATE_TOPICS="posts:1:1,comments:1:1"    # topic:partitions:replicas
+    depends_on:
+      - zookeeper
+  spark-master:
+    image: bitnami/spark:latest
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+  airflow:
+    image: apache/airflow:latest
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__FERNET_KEY=''
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
